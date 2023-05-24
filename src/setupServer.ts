@@ -15,6 +15,10 @@ import HTTP_STATUS from "http-status-codes";
 import compression from "compression";
 import "express-async-errors";
 import {config} from './config';
+import {Server} from 'socket.io';
+import {createClient} from 'redis';
+import {createAdapter} from '@socket.io/redis-adapter'
+
 const SERVER_PORT = 5000;
 
 export class SocialMediaServer {
@@ -62,17 +66,34 @@ export class SocialMediaServer {
   private async startServer(app: Application) :Promise<void> {
     try {
       const httpServer = new http.Server(app);
+      const socketIO: Server = await this.createSocketIO(httpServer);
       this.startHttpServer(httpServer);
+      this.socketIOConnections(socketIO)
     }catch (e) {
       console.log(e)
     }
   }
 
-  private createSocketIO(httpServer: http.Server) {}
+  private async createSocketIO(httpServer: http.Server) {
+    const io: Server = new Server(httpServer,{
+      cors: {
+        origin: config.CLIENT_URL,
+        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      }
+    });
+    const pubClient = createClient({url: config.REDIS_HOST})
+    const subClient = pubClient.duplicate();
+    await Promise.all([pubClient.connect(), subClient.connect()])
+    io.adapter(createAdapter(pubClient, subClient))
+    return io;
+  }
 
   private startHttpServer(httpServer: http.Server) {
     httpServer.listen(SERVER_PORT,() => {
       console.log(`Server running on port ${SERVER_PORT}`)
     })
+  }
+  private socketIOConnections(io: Server) {
+
   }
 }
