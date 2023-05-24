@@ -14,7 +14,10 @@ import cookieSession from "cookie-session";
 import HTTP_STATUS from "http-status-codes";
 import compression from "compression";
 import "express-async-errors";
-export class ChattyServer {
+
+const SERVER_PORT = 5000;
+
+export class SocialMediaServer {
   private app: Application;
 
   constructor(app: Application) {
@@ -56,9 +59,20 @@ export class ChattyServer {
   private routeMiddleware(app: Application): void {}
   private globalHandler(app: Application): void {}
 
-  private startServer(app: Application) {}
+  private async startServer(app: Application) :Promise<void> {
+    try {
+      const httpServer = new http.Server(app);
+      this.startHttpServer(httpServer);
+    }catch (e) {
+      console.log(e)
+    }
+  }
 
   private createSocketIO(httpServer: http.Server) {}
 
-  private startHttpServer(httpServer: http.Server) {}
+  private startHttpServer(httpServer: http.Server) {
+    httpServer.listen(SERVER_PORT,() => {
+      console.log(`Server running on port ${SERVER_PORT}`)
+    })
+  }
 }
