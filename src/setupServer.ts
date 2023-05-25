@@ -18,7 +18,8 @@ import {config} from './config';
 import {Server} from 'socket.io';
 import {createClient} from 'redis';
 import {createAdapter} from '@socket.io/redis-adapter'
-
+import appRoutes from './routes'
+import {CustomError, IErrorResponse} from "./shared/globals/helpers/error-handler";
 const SERVER_PORT = 5000;
 
 export class SocialMediaServer {
@@ -31,7 +32,7 @@ export class SocialMediaServer {
   public start(): void {
     this.securityMiddleware(this.app);
     this.standardMiddleware(this.app);
-    this.routeMiddleware(this.app);
+    this.routesMiddleware(this.app);
     this.globalHandler(this.app);
     this.startServer(this.app);
   }
@@ -60,8 +61,21 @@ export class SocialMediaServer {
     app.use(json({ limit: "50mb" }));
     app.use(urlencoded({ extended: true, limit: "50mb" }));
   }
-  private routeMiddleware(app: Application): void {}
-  private globalHandler(app: Application): void {}
+  private routesMiddleware(app: Application): void {
+    appRoutes(app)
+  }
+  private globalHandler(app: Application): void {
+    app.all('*', (req: Request, res: Response) => {
+      res.status(HTTP_STATUS.NOT_FOUND).json({message: `${req.originalUrl} not found`})
+    })
+    app.use((error: IErrorResponse, req: Request, res: Response, next: NextFunction) => {
+      console.log(error)
+      if(error instanceof  CustomError){
+        return res.status(error.statusCode).json(error.serializeErrors())
+      }
+      next();
+    })
+  }
 
   private async startServer(app: Application) :Promise<void> {
     try {
