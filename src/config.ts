@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 import * as process from "process";
+import bunyan, {LogLevel} from 'bunyan'
 
 dotenv.config({})
 
@@ -29,6 +30,10 @@ class Config {
         throw new Error(`Configuration ${key} is undefined`);
       }
     }
+  }
+
+  public createLogger(name: string, level:LogLevel ="debug") {
+    return bunyan.createLogger({name, level})
   }
 }
 

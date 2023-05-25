@@ -20,6 +20,11 @@ import {createClient} from 'redis';
 import {createAdapter} from '@socket.io/redis-adapter'
 import appRoutes from './routes'
 import {CustomError, IErrorResponse} from "./shared/globals/helpers/error-handler";
+import Logger from 'bunyan'
+
+const log: Logger = config.createLogger("setupServer");
+
+
 const SERVER_PORT = 5000;
 
 export class SocialMediaServer {
@@ -69,7 +74,7 @@ export class SocialMediaServer {
       res.status(HTTP_STATUS.NOT_FOUND).json({message: `${req.originalUrl} not found`})
     })
     app.use((error: IErrorResponse, req: Request, res: Response, next: NextFunction) => {
-      console.log(error)
+      log.info(error)
       if(error instanceof  CustomError){
         return res.status(error.statusCode).json(error.serializeErrors())
       }
@@ -84,7 +89,7 @@ export class SocialMediaServer {
       this.startHttpServer(httpServer);
       this.socketIOConnections(socketIO)
     }catch (e) {
-      console.log(e)
+      log.error(e)
     }
   }
 
@@ -104,7 +109,7 @@ export class SocialMediaServer {
 
   private startHttpServer(httpServer: http.Server) {
     httpServer.listen(SERVER_PORT,() => {
-      console.log(`Server running on port ${SERVER_PORT}`)
+      log.info(`Server running on port ${SERVER_PORT}`)
     })
   }
   private socketIOConnections(io: Server) {
