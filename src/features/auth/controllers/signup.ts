@@ -8,6 +8,7 @@ import { BadRequestError } from '@global/helpers/error-handler';
 import { Helpers } from '@global/helpers/helpers';
 import { UploadApiResponse } from 'cloudinary';
 import { uploads } from '@global/helpers/cloudinary-upload';
+import HTTP_STATUS from 'http-status-codes';
 
 export class Signup {
   @joiValidation(signupSchema)
@@ -21,7 +22,7 @@ export class Signup {
     const authObjectId: ObjectId = new ObjectId();
     const userObjectId: ObjectId = new ObjectId();
     const uId = `${Helpers.generateRandomIntegers(12)}`;
-    const authData: IAuthDocument = this.signupData({
+    const authData: IAuthDocument = Signup.prototype.signupData({
       _id: authObjectId,
       uId,
       username,
@@ -31,8 +32,10 @@ export class Signup {
     });
 
     const result: UploadApiResponse = await uploads(avatarImage, `${userObjectId}`, true, true) as UploadApiResponse;
+
     if (!result?.public_id) throw new BadRequestError('File upload: Something bad happened. Try again later.');
 
+    res.status(HTTP_STATUS.CREATED).json({message: 'user created successfully', authData})
   }
 
   private signupData(data: ISignUpData): IAuthDocument {

@@ -6,7 +6,7 @@ export function uploads(file: string, public_id?: string, overwrite?: boolean, i
       public_id, overwrite, invalidate
     },(error: UploadApiErrorResponse | undefined, result: UploadApiResponse | undefined) => {
       if(error)resolve(error);
-      resolve(resolve)
+      resolve(result)
     });
   })
 }

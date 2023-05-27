@@ -44,7 +44,7 @@ class Config {
 
   public cloudinaryConfig() {
     cloudinary.config({
-      cloud_name: this.CLOUD_API_KEY,
+      cloud_name: this.CLOUD_NAME,
       api_key: this.CLOUD_API_KEY,
       api_secret: this.CLOUD_API_SECRET
     })
